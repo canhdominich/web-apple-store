@@ -1,0 +1,110 @@
+@model CustomerListViewModel
+@functions {
+    private static string AvatarTone(ApplicationUser user)
+    {
+        var source = string.IsNullOrWhiteSpace(user.Email) ? user.FullName : user.Email;
+        var hash = 0;
+
+        foreach (var character in source ?? string.Empty)
+        {
+            hash = ((hash * 31) + character) & 0x7fffffff;
+        }
+
+        return $"avatar-tone-{hash % 6}";
+    }
+}
+
+<div class="admin-card table-card">
+    @if (Model.Users.Count == 0)
+    {
+        <div class="admin-empty">
+            <i class="bi bi-search"></i>
+            <h2>Không tìm thấy khách hàng nào</h2>
+            <p class="mb-0">Thử đổi từ khóa hoặc trạng thái lọc.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle admin-data-table">
+                <thead>
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>Số điện thoại</th>
+                        <th>Ngày tham gia</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        var initial = string.IsNullOrWhiteSpace(user.FullName) ? "K" : user.FullName[..1].ToUpperInvariant();
+                        var avatarTone = AvatarTone(user);
+                        <tr>
+                            <td data-label="Khách hàng">
+                                <div class="customer-cell">
+                                    <span class="customer-avatar @avatarTone">@initial</span>
+                                    <div>
+                                        <strong>@user.FullName</strong>
+                                        <small>@user.Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Số điện thoại">@(string.IsNullOrWhiteSpace(user.PhoneNumber) ? "Chưa cập nhật" : user.PhoneNumber)</td>
+                            <td data-label="Ngày tham gia">@user.CreatedDate.ToVietnamTime().ToString("dd/MM/yyyy")</td>
+                            <td data-label="Trạng thái"><span class="admin-status @(user.IsActive ? "active" : "inactive")">@(user.IsActive ? "Hoạt động" : "Đã khóa")</span></td>
+                            <td data-label="Thao tác" class="text-end">
+                                <div class="admin-action-group">
+                                    <a class="admin-action admin-action-view" asp-action="Details" asp-route-id="@user.Id" data-bs-toggle="tooltip" title="Xem chi tiết" aria-label="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <form class="d-inline js-confirm-form" asp-action="Toggle" method="post" data-confirm-title="Xác nhận thay đổi trạng thái" data-confirm-text="Bạn muốn @(user.IsActive ? "khóa" : "mở khóa") tài khoản này?">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                                        <button class="admin-action @(user.IsActive ? "admin-action-danger" : "admin-action-success")" type="submit" data-bs-toggle="tooltip" title="@(user.IsActive ? "Khóa tài khoản" : "Mở khóa tài khoản")" aria-label="@(user.IsActive ? "Khóa tài khoản" : "Mở khóa tài khoản")">
+                                            <i class="bi @(user.IsActive ? "bi-lock" : "bi-unlock")"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="admin-table-footer">
+            <span class="text-muted small">Hiển thị @Model.FromItem-@Model.ToItem trong @Model.TotalItems kết quả</span>
+            <nav aria-label="Phân trang khách hàng">
+                <ul class="pagination mb-0">
+                    @if (Model.Page <= 1)
+                    {
+                        <li class="page-item disabled" aria-disabled="true"><span class="page-link">Trước</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-search="@Model.Search" asp-route-status="@Model.Status">Trước</a>
+                        </li>
+                    }
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize" asp-route-search="@Model.Search" asp-route-status="@Model.Status">@i</a>
+                        </li>
+                    }
+                    @if (Model.Page >= Model.TotalPages)
+                    {
+                        <li class="page-item disabled" aria-disabled="true"><span class="page-link">Sau</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-search="@Model.Search" asp-route-status="@Model.Status">Sau</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

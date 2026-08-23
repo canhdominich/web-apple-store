@@ -1,0 +1,4 @@
+services:
+  web:
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"

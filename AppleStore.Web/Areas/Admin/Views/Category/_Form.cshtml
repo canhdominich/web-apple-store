@@ -1,0 +1,62 @@
+@model CategoryFormViewModel
+@{
+    var isCreate = Model.Id == 0;
+}
+
+<div class="admin-form-shell">
+    <div class="admin-form-header">
+        <div>
+            <a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Danh mục</a>
+            <h2>@(isCreate ? "Thêm danh mục" : "Sửa danh mục")</h2>
+            <p>Chuẩn hóa tên, slug và trạng thái hiển thị trong danh mục sản phẩm.</p>
+        </div>
+        <span class="admin-form-badge"><i class="bi bi-collection"></i> Danh mục</span>
+    </div>
+
+    <form asp-action="@(isCreate ? "Create" : "Edit")" method="post" class="admin-form" novalidate>
+        <input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+
+        <div class="admin-form-section">
+            <div class="admin-section-heading">
+                <h3>Thông tin chính</h3>
+                <span>Hiển thị trên menu và bộ lọc sản phẩm.</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-7 form-field">
+                    <label asp-for="Name" class="form-label">Tên danh mục</label>
+                    <input asp-for="Name" class="form-control" placeholder="Ví dụ: iPhone" />
+                    <span asp-validation-for="Name"></span>
+                </div>
+                <div class="col-md-5 form-field">
+                    <label asp-for="Slug" class="form-label">Slug</label>
+                    <input asp-for="Slug" class="form-control" placeholder="iphone" />
+                    <span asp-validation-for="Slug"></span>
+                </div>
+                <div class="col-12 form-field">
+                    <label asp-for="Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả ngắn cho nhóm sản phẩm"></textarea>
+                    <span asp-validation-for="Description"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-form-section compact">
+            <div class="admin-toggle-row">
+                <div>
+                    <strong>Trạng thái danh mục</strong>
+                    <span>Danh mục đang hoạt động sẽ hiển thị ở cửa hàng.</span>
+                </div>
+                <div class="form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" role="switch" />
+                    <label asp-for="IsActive" class="form-check-label">Đang hoạt động</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-form-actions">
+            <a class="btn btn-light" asp-action="Index">Hủy</a>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-2"></i>Lưu danh mục</button>
+        </div>
+    </form>
+</div>

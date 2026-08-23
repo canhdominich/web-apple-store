@@ -1,0 +1,91 @@
+@model CartViewModel
+@{
+    ViewData["Title"] = "Giỏ hàng · Apple Store";
+}
+
+@await Html.PartialAsync("_PageHeaderCompact", new PageHeaderCompactViewModel
+{
+    Title = "Giỏ hàng của bạn",
+    Breadcrumbs = new List<PageHeaderBreadcrumbItemViewModel>
+    {
+        new("Trang chủ", Url.Action("Index", "Home")),
+        new("Giỏ hàng")
+    }
+})
+
+<section class="section-space cart-page pt-0">
+    <div class="container">
+        @if (Model.Items.Count == 0)
+        {
+            <div class="cart-empty-shell">
+                <div class="empty-state cart-empty-state">
+                    <i class="bi bi-bag"></i>
+                    <h3>Giỏ hàng đang trống</h3>
+                    <p>Thêm một sản phẩm bạn yêu thích để bắt đầu.</p>
+                    <a class="btn btn-primary mt-2" asp-controller="Product" asp-action="Index">Khám phá sản phẩm</a>
+                </div>
+            </div>
+
+            @if (Model.Recommendations.Count > 0)
+            {
+                <div class="cart-recommendations">
+                    <div class="section-heading text-center mb-4">
+                        <div class="eyebrow">Gợi ý nhanh</div>
+                        <h2>Có thể bạn quan tâm</h2>
+                    </div>
+                    <div class="row g-3 g-lg-4">
+                        @foreach (var product in Model.Recommendations)
+                        {
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <partial name="_ProductCard" model="product" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-8">
+                    <div class="cart-list">
+                        @foreach (var item in Model.Items)
+                        {
+                            var variant = item.ProductVariant!;
+                            <div class="cart-item">
+                                <img src="@(variant.Product?.ImageThumbnail ?? "/images/products/placeholder.svg")" alt="@variant.Product?.Name" />
+                                <div class="flex-grow-1">
+                                    <a class="cart-item-title" asp-controller="Product" asp-action="Details" asp-route-slug="@variant.Product?.Slug">@variant.Product?.Name</a>
+                                    <div class="text-muted small">@variant.Color / @variant.Storage / @variant.SKU</div>
+                                    <strong class="d-block mt-2" data-cart-line-total="@item.Id">@((variant.Price * item.Quantity).ToMoney())</strong>
+                                </div>
+                                <form asp-action="Update" method="post" class="cart-quantity-form" data-cart-item-id="@item.Id">
+                                    <input type="hidden" name="itemId" value="@item.Id" />
+                                    <button class="cart-qty-btn js-cart-quantity" type="button" data-delta="-1" aria-label="Giảm số lượng"><i class="bi bi-dash"></i></button>
+                                    <input class="form-control quantity-input" type="number" name="quantity" value="@item.Quantity" min="0" max="@variant.StockQuantity" disabled data-cart-quantity="@item.Id" />
+                                    <button class="cart-qty-btn js-cart-quantity" type="button" data-delta="1" aria-label="Tăng số lượng"><i class="bi bi-plus"></i></button>
+                                </form>
+                                <form asp-action="Remove" method="post">
+                                    <input type="hidden" name="itemId" value="@item.Id" />
+                                    <button class="btn btn-link text-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                    <form asp-action="Clear" method="post" class="mt-3">
+                        <button class="btn btn-link text-muted p-0">Xóa toàn bộ giỏ hàng</button>
+                    </form>
+                </div>
+                <div class="col-lg-4">
+                    @{
+                        ViewData["OrderSummaryTitle"] = "Tóm tắt đơn hàng";
+                        ViewData["OrderSummarySticky"] = true;
+                    }
+                    <partial name="_OrderSummary" model="Model" />
+                    <a class="btn btn-primary w-100 mt-4" asp-controller="Checkout" asp-action="Index">Tiến hành thanh toán <i class="bi bi-arrow-right ms-2"></i></a>
+                    <p class="small text-muted text-center mt-3 mb-0"><i class="bi bi-shield-check me-1"></i> Bảo mật thanh toán</p>
+                </div>
+            </div>
+        }
+    </div>
+</section>

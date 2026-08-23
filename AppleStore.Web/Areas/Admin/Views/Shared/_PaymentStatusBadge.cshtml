@@ -1,0 +1,2 @@
+@model PaymentStatus
+<span class="admin-status @(Model == PaymentStatus.Paid ? "active" : Model == PaymentStatus.Failed || Model == PaymentStatus.Cancelled ? "inactive" : "pending")">@Model.ToPaymentStatusText()</span>

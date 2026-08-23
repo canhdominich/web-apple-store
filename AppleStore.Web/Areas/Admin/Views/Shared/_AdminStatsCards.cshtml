@@ -1,0 +1,16 @@
+@model IReadOnlyList<AdminStatCardViewModel>
+
+<div class="row g-3 admin-stats-grid">
+    @foreach (var item in Model)
+    {
+        <div class="col-6 col-xl-3">
+            <div class="admin-stat-card @item.Tone">
+                <div class="admin-stat-icon"><i class="bi @item.Icon"></i></div>
+                <div>
+                    <span>@item.Label</span>
+                    <strong>@item.Value</strong>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,19 @@
+:root {
+  --admin-sidebar-bg: #1a2332;
+  --admin-sidebar-width: 260px;
+  --admin-sidebar-text: #8b95a5;
+  --admin-sidebar-text-active: #ffffff;
+  --admin-sidebar-active-bg: rgba(0, 113, 227, 0.15);
+  --admin-sidebar-active-border: #0071e3;
+  --admin-content-bg: #f5f6f8;
+  --admin-card-bg: #ffffff;
+  --admin-border: #e5e7eb;
+  --status-active-bg: #d1fae5;
+  --status-active-text: #065f46;
+  --status-inactive-bg: #fee2e2;
+  --status-inactive-text: #991b1b;
+  --status-pending-bg: #fef3c7;
+  --status-pending-text: #92400e;
+  --admin-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --admin-radius: 10px;
+}

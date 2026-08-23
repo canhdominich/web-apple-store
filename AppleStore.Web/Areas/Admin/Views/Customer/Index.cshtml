@@ -1,0 +1,78 @@
+@model CustomerListViewModel
+@{
+    ViewData["Title"] = "Khách hàng";
+
+    var statusOptions = new (string Value, string Label)[]
+    {
+        ("", "Tất cả trạng thái"),
+        ("active", "Hoạt động"),
+        ("inactive", "Đã khóa")
+    };
+    var selectedStatus = statusOptions.FirstOrDefault(option => option.Value == Model.Status);
+    if (string.IsNullOrEmpty(selectedStatus.Label)) selectedStatus = statusOptions[0];
+
+    var pageSizeOptions = new (int Value, string Label)[]
+    {
+        (10, "10 dòng"),
+        (25, "25 dòng"),
+        (50, "50 dòng")
+    };
+    var selectedPageSize = pageSizeOptions.FirstOrDefault(option => option.Value == Model.PageSize);
+    if (string.IsNullOrEmpty(selectedPageSize.Label)) selectedPageSize = pageSizeOptions[0];
+}
+
+<partial name="_AdminStatsCards" model="Model.Stats" />
+
+<div class="admin-toolbar">
+    <form id="customer-filter-form" class="admin-toolbar-left" method="get" asp-action="Index" data-admin-live-filter data-results-target="#customer-results" data-debounce="400">
+        <div class="search-admin">
+            <i class="bi bi-search"></i>
+            <input name="search" value="@Model.Search" placeholder="Tìm theo tên, email hoặc số điện thoại" data-admin-live-search />
+        </div>
+        <input type="hidden" id="customer-status" name="status" value="@Model.Status" />
+        <input type="hidden" id="customer-page-size" name="pageSize" value="@Model.PageSize" />
+        <div class="filter-admin">
+            <div class="ant-dropdown admin-filter-dropdown" data-ant-dropdown data-input="#customer-status" data-submit-form="#customer-filter-form">
+                <button class="ant-dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span data-ant-dropdown-label>@selectedStatus.Label</span>
+                    <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="ant-dropdown-panel" role="listbox" aria-label="Lọc trạng thái khách hàng">
+                    @foreach (var option in statusOptions)
+                    {
+                        var isSelected = option.Value == Model.Status;
+                        <button class="ant-dropdown-item @(isSelected ? "is-selected" : "")" type="button" role="option" data-value="@option.Value" data-label="@option.Label" aria-selected="@(isSelected ? "true" : "false")">
+                            <span>@option.Label</span>
+                            <i class="bi bi-check ant-dropdown-item-check" aria-hidden="true"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="ant-dropdown admin-page-size-dropdown" data-ant-dropdown data-input="#customer-page-size" data-submit-form="#customer-filter-form">
+            <button class="ant-dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span data-ant-dropdown-label>@selectedPageSize.Label</span>
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="ant-dropdown-panel" role="listbox" aria-label="Số dòng mỗi trang">
+                @foreach (var option in pageSizeOptions)
+                {
+                    var isSelected = option.Value == Model.PageSize;
+                    <button class="ant-dropdown-item @(isSelected ? "is-selected" : "")" type="button" role="option" data-value="@option.Value" data-label="@option.Label" aria-selected="@(isSelected ? "true" : "false")">
+                        <span>@option.Label</span>
+                        <i class="bi bi-check ant-dropdown-item-check" aria-hidden="true"></i>
+                    </button>
+                }
+            </div>
+        </div>
+    </form>
+    <div class="admin-toolbar-right">
+        <a class="btn btn-outline-secondary" asp-action="ExportCsv" asp-route-search="@Model.Search" asp-route-status="@Model.Status" data-admin-filter-export data-export-base="@Url.Action("ExportCsv")">
+            <i class="bi bi-download me-2"></i>Export CSV
+        </a>
+    </div>
+</div>
+
+<div id="customer-results" class="admin-results">
+    <partial name="_CustomerTable" model="Model" />
+</div>

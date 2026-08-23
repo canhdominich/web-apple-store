@@ -1,0 +1,34 @@
+@model CartViewModel
+@{
+    var title = ViewData["OrderSummaryTitle"] as string ?? "Đơn hàng của bạn";
+    var sticky = ViewData["OrderSummarySticky"] is true ? "is-sticky" : string.Empty;
+    var shippingFee = Model.Subtotal >= 1000000 ? 0m : 30000m;
+    var total = Model.Subtotal + shippingFee;
+}
+<div class="summary-card @sticky">
+    <h2 class="h5 mb-4">@title</h2>
+    @foreach (var item in Model.Items)
+    {
+        var variant = item.ProductVariant!;
+        <div class="mini-cart-item">
+            <img src="@(variant.Product?.ImageThumbnail ?? "/images/products/placeholder.svg")" alt="@variant.Product?.Name" />
+            <div>
+                <strong>@variant.Product?.Name</strong>
+            <small>@variant.Color / @variant.Storage / Số lượng: <span data-summary-quantity="@item.Id">@item.Quantity</span></small>
+        </div>
+            <span data-summary-line-total="@item.Id">@((variant.Price * item.Quantity).ToMoney())</span>
+        </div>
+    }
+    <div class="summary-line mt-3">
+        <span>Tạm tính</span>
+        <strong data-cart-subtotal>@Model.Subtotal.ToMoney()</strong>
+    </div>
+    <div class="summary-line">
+        <span>Phí giao hàng</span>
+        <span class="text-success" data-cart-shipping>@(shippingFee == 0 ? "Miễn phí" : shippingFee.ToMoney())</span>
+    </div>
+    <div class="summary-total">
+        <span>Tổng thanh toán</span>
+        <strong data-cart-total>@total.ToMoney()</strong>
+    </div>
+</div>

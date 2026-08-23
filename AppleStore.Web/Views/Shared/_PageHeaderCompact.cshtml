@@ -1,0 +1,31 @@
+@model PageHeaderCompactViewModel
+
+<header class="page-header-compact">
+    @if (Model.Breadcrumbs.Count > 0)
+    {
+        <nav class="breadcrumb-compact" aria-label="Breadcrumb">
+            @for (var i = 0; i < Model.Breadcrumbs.Count; i++)
+            {
+                var item = Model.Breadcrumbs[i];
+                var isLast = i == Model.Breadcrumbs.Count - 1;
+
+                <span class="breadcrumb-compact-segment @(isLast ? "is-current" : "")">
+                    @if (!isLast && !string.IsNullOrWhiteSpace(item.Url))
+                    {
+                        <a href="@item.Url">@item.Label</a>
+                    }
+                    else
+                    {
+                        <span>@item.Label</span>
+                    }
+                </span>
+
+                @if (!isLast)
+                {
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                }
+            }
+        </nav>
+    }
+    <h1 class="page-title-compact">@Model.Title</h1>
+</header>

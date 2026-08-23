@@ -1,0 +1,120 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh toán - Apple Store";
+    var isSignedIn = User.Identity?.IsAuthenticated == true;
+}
+
+<div class="page-hero compact">
+    <div class="container">
+        <nav class="breadcrumb small mb-3">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <span>/</span>
+            <a asp-controller="Cart" asp-action="Index">Giỏ hàng</a>
+            <span>/</span>
+            <span>Thanh toán</span>
+        </nav>
+        <div class="eyebrow">Bước cuối cùng</div>
+        <h1>Hoàn tất <em>đơn hàng.</em></h1>
+        <div class="checkout-stepper" aria-label="Tiến trình thanh toán">
+            <div class="checkout-step"><span class="checkout-step-number">1</span><span>Giỏ hàng</span></div>
+            <div class="checkout-step is-active"><span class="checkout-step-number">2</span><span>Thông tin giao hàng</span></div>
+            <div class="checkout-step"><span class="checkout-step-number">3</span><span>Thanh toán</span></div>
+            <div class="checkout-step"><span class="checkout-step-number">4</span><span>Hoàn tất</span></div>
+        </div>
+    </div>
+</div>
+
+<section class="section-space pt-4">
+    <div class="container">
+        <form asp-action="Index" method="post" class="js-checkout-form" novalidate>
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-7">
+                    <div class="checkout-card">
+                        <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+                        <h2 class="h5 mb-4">Thông tin giao hàng</h2>
+                        <div class="row g-3">
+                            <div class="col-md-7 form-field">
+                                <label asp-for="CustomerName" class="form-label"></label>
+                                <input asp-for="CustomerName" class="form-control" autocomplete="name" />
+                                <span asp-validation-for="CustomerName"></span>
+                            </div>
+                            <div class="col-md-5 form-field">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" autocomplete="tel" />
+                                <span asp-validation-for="PhoneNumber"></span>
+                            </div>
+                            <div class="col-12 form-field">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" autocomplete="email" readonly="@isSignedIn" />
+                                <span asp-validation-for="Email"></span>
+                                <div class="checkout-note">Email dùng để gửi xác nhận đơn hàng.</div>
+                            </div>
+                            <div class="col-12 form-field">
+                                <div class="d-flex justify-content-between align-items-center gap-3">
+                                    <label asp-for="ShippingAddress" class="form-label mb-0"></label>
+                                    @if (Model.HasSavedAddress && !string.IsNullOrWhiteSpace(Model.SavedAddress))
+                                    {
+                                        <button class="btn btn-link p-0 small js-use-saved-address" type="button" data-address="@Model.SavedAddress">Dùng địa chỉ đã lưu</button>
+                                    }
+                                </div>
+                                <textarea asp-for="ShippingAddress" class="form-control mt-2" rows="3" autocomplete="street-address"></textarea>
+                                <span asp-validation-for="ShippingAddress"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Note" class="form-label">Ghi chú <span class="text-muted fw-normal">(tùy chọn)</span></label>
+                                <textarea asp-for="Note" class="form-control" rows="2" placeholder="Ví dụ: giao giờ hành chính"></textarea>
+                                <span asp-validation-for="Note"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-card mt-4">
+                        <h2 class="h5 mb-4">Phương thức thanh toán</h2>
+                        <div class="payment-grid">
+                            <label class="payment-option">
+                                <input asp-for="PaymentMethod" value="COD" type="radio" />
+                                <span class="payment-icon"><i class="bi bi-box-seam"></i></span>
+                                <span>
+                                    <strong>Thanh toán khi nhận hàng</strong>
+                                    <small>Thanh toán bằng tiền mặt sau khi kiểm tra sản phẩm.</small>
+                                </span>
+                            </label>
+                            <label class="payment-option">
+                                <input asp-for="PaymentMethod" value="VNPay" type="radio" />
+                                <span class="payment-icon vnpay"><i class="bi bi-credit-card-2-front"></i></span>
+                                <span>
+                                    <strong>Thanh toán qua VNPay</strong>
+                                    <small>Chuyển sang cổng VNPay để hoàn tất giao dịch.</small>
+                                </span>
+                            </label>
+                        </div>
+                        <span asp-validation-for="PaymentMethod"></span>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    @{
+                        ViewData["OrderSummaryTitle"] = "Đơn hàng của bạn";
+                        ViewData["OrderSummarySticky"] = true;
+                    }
+                    <div class="checkout-summary-wrap">
+                        <partial name="_OrderSummary" model="Model.Cart" />
+                        <div class="checkout-summary-actions">
+                            <button class="btn btn-primary w-100 btn-lg js-submit-button" type="submit" disabled>
+                                <span class="submit-label">Đặt hàng</span>
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" aria-hidden="true"></span>
+                            </button>
+                            <p class="small text-muted mt-3 mb-0">
+                                <i class="bi bi-lock-fill me-1"></i> Thông tin của bạn được bảo mật.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

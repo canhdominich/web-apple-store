@@ -1,0 +1,2 @@
+@model OrderStatus
+<span class="admin-status @(Model switch { OrderStatus.Pending => "pending", OrderStatus.Confirmed => "confirmed", OrderStatus.Shipping => "shipping", OrderStatus.Completed => "active", _ => "inactive" })">@Model.ToOrderStatusText()</span>

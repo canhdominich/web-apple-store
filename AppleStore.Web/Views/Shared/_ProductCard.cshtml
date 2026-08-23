@@ -1,0 +1,45 @@
+@model Product
+@{
+    var product = Model;
+    var variant = product.Variants.OrderBy(v => v.Price).FirstOrDefault();
+    var categorySlug = product.Category?.Slug ?? "accessories";
+    var hasImage = !string.IsNullOrWhiteSpace(product.ImageThumbnail) && !product.ImageThumbnail.Contains("placeholder", StringComparison.OrdinalIgnoreCase);
+    string GetCategoryIcon(string slug) => slug switch
+    {
+        "iphone" => "bi-phone",
+        "mac" => "bi-laptop",
+        "ipad" => "bi-tablet",
+        "apple-watch" => "bi-smartwatch",
+        "airpods" => "bi-earbuds",
+        _ => "bi-keyboard"
+    };
+}
+
+<article class="product-card h-100">
+    <a class="product-card-image" asp-controller="Product" asp-action="Details" asp-route-slug="@product.Slug" aria-label="@product.Name">
+        <span class="product-badge">@(product.IsFeatured ? "Đề xuất" : "Mới")</span>
+        @if (hasImage)
+        {
+            <img src="@product.ImageThumbnail" alt="@product.Name" loading="lazy" />
+        }
+        else
+        {
+            <div class="product-placeholder product-placeholder--@categorySlug">
+                <i class="bi @GetCategoryIcon(categorySlug)" aria-hidden="true"></i>
+            </div>
+        }
+    </a>
+    <div class="product-card-body">
+        <div class="text-muted small mb-2">@product.Category?.Name</div>
+        <h3 class="h6 product-title"><a asp-controller="Product" asp-action="Details" asp-route-slug="@product.Slug">@product.Name</a></h3>
+        <div class="d-flex align-items-center justify-content-between mt-3">
+            <strong class="price">@((variant?.Price ?? product.BasePrice).ToMoney())</strong>
+            <span class="stock-dot"><i class="bi bi-check-circle-fill"></i> Còn hàng</span>
+        </div>
+        <form class="add-to-cart-form mt-3" asp-controller="Cart" asp-action="Add" method="post">
+            <input type="hidden" name="VariantId" value="@variant?.Id" />
+            <input type="hidden" name="Quantity" value="1" />
+            <button class="btn btn-dark w-100" type="submit"><i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ</button>
+        </form>
+    </div>
+</article>

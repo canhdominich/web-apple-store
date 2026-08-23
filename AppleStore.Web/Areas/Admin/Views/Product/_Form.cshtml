@@ -1,0 +1,130 @@
+@model ProductFormViewModel
+@{
+    var isCreate = Model.Id == 0;
+}
+
+<div class="admin-form-shell">
+    <div class="admin-form-header">
+        <div>
+            <a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Sản phẩm</a>
+            <h2>@(isCreate ? "Thêm sản phẩm" : "Sửa sản phẩm")</h2>
+            <p>Quản lý thông tin bán hàng, ảnh đại diện và các phiên bản sản phẩm.</p>
+        </div>
+        <span class="admin-form-badge"><i class="bi bi-box-seam"></i> Sản phẩm</span>
+    </div>
+
+    <form asp-action="@(isCreate ? "Create" : "Edit")" method="post" enctype="multipart/form-data" class="admin-form" novalidate>
+        <input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+
+        <div class="admin-form-grid">
+            <div class="admin-form-main">
+                <div class="admin-form-section">
+                    <div class="admin-section-heading">
+                        <h3>Thông tin sản phẩm</h3>
+                        <span>Tên, danh mục và nội dung hiển thị ngoài cửa hàng.</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-8 form-field">
+                            <label asp-for="Name" class="form-label">Tên sản phẩm</label>
+                            <input asp-for="Name" class="form-control" placeholder="Ví dụ: iPhone 16 Pro" />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+                        <div class="col-md-4 form-field">
+                            <label asp-for="CategoryId" class="form-label">Danh mục</label>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="">Chọn danh mục</option>
+                                @foreach (var c in Model.Categories) { <option value="@c.Id">@c.Name</option> }
+                            </select>
+                            <span asp-validation-for="CategoryId"></span>
+                        </div>
+                        <div class="col-md-6 form-field">
+                            <label asp-for="Slug" class="form-label">Slug</label>
+                            <input asp-for="Slug" class="form-control" placeholder="iphone-16-pro" />
+                            <span asp-validation-for="Slug"></span>
+                        </div>
+                        <div class="col-md-6 form-field">
+                            <label asp-for="BasePrice" class="form-label">Giá cơ bản</label>
+                            <input asp-for="BasePrice" class="form-control" type="number" min="1" step="1" value="@Model.BasePrice.ToMoneyValue()" />
+                            <span asp-validation-for="BasePrice"></span>
+                        </div>
+                        <div class="col-12 form-field">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Mô tả ngắn gọn, rõ lợi ích chính của sản phẩm"></textarea>
+                            <span asp-validation-for="Description"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-section">
+                    <div class="admin-section-heading horizontal">
+                        <div>
+                            <h3>Các phiên bản</h3>
+                            <span>Mỗi phiên bản gồm màu, dung lượng, SKU, giá và tồn kho.</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-light" id="add-variant"><i class="bi bi-plus-lg me-1"></i>Thêm phiên bản</button>
+                    </div>
+                    <div id="variants-container" class="variant-admin-list">
+                        @for (var i = 0; i < Model.Variants.Count; i++)
+                        {
+                            <div class="variant-admin-row">
+                                <input type="hidden" name="Variants[@i].Id" value="@Model.Variants[i].Id" />
+                                <input class="form-control" name="Variants[@i].Color" value="@Model.Variants[i].Color" placeholder="Màu sắc" required />
+                                <input class="form-control" name="Variants[@i].Storage" value="@Model.Variants[i].Storage" placeholder="Dung lượng" required />
+                                <input class="form-control" name="Variants[@i].SKU" value="@Model.Variants[i].SKU" placeholder="SKU" required />
+                                <input class="form-control" name="Variants[@i].Price" value="@Model.Variants[i].Price.ToMoneyValue()" type="number" min="1" step="1" placeholder="Giá" required />
+                                <input class="form-control" name="Variants[@i].StockQuantity" value="@Model.Variants[i].StockQuantity" type="number" min="0" placeholder="Tồn kho" required />
+                                <button type="button" class="btn btn-light remove-variant" title="Xóa phiên bản"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <aside class="admin-form-side">
+                <div class="admin-form-section">
+                    <div class="admin-section-heading">
+                        <h3>Ảnh đại diện</h3>
+                        <span>Dùng JPG, PNG hoặc WEBP. Tối đa 5MB.</span>
+                    </div>
+                    <label class="admin-upload-zone">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <strong>Chọn ảnh sản phẩm</strong>
+                        <span>Kéo thả hoặc bấm để tải ảnh lên</span>
+                        <input asp-for="Image" accept=".jpg,.jpeg,.png,.webp" />
+                    </label>
+                    <div class="admin-image-preview mt-3">
+                        <img id="product-image-preview" src="/images/products/placeholder.svg" alt="Xem trước ảnh sản phẩm" />
+                    </div>
+                    <span asp-validation-for="Image"></span>
+                </div>
+
+                <div class="admin-form-section compact">
+                    <div class="admin-toggle-row">
+                        <div>
+                            <strong>Nổi bật</strong>
+                            <span>Hiển thị ở khu sản phẩm nổi bật.</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input asp-for="IsFeatured" class="form-check-input" role="switch" />
+                        </div>
+                    </div>
+                    <div class="admin-toggle-row">
+                        <div>
+                            <strong>Trạng thái bán</strong>
+                            <span>Sản phẩm đang bán sẽ hiển thị trên cửa hàng.</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" role="switch" />
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <div class="admin-form-actions">
+            <a class="btn btn-light" asp-action="Index">Hủy</a>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-2"></i>Lưu sản phẩm</button>
+        </div>
+    </form>
+</div>
