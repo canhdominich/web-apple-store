@@ -1,0 +1,329 @@
+ĐẶC TẢ YÊU CẦU NGHIỆP VỤ HỆ THỐNG APPLE STORE
+================================================
+
+1. THÔNG TIN CHUNG
+-------------------
+
+1.1. Tên hệ thống
+Website thương mại điện tử Apple Store.
+
+1.2. Mục tiêu
+- Cung cấp kênh trực tuyến để khách hàng tra cứu và mua các sản phẩm Apple.
+- Quản lý tập trung danh mục, sản phẩm, phiên bản, tồn kho, khách hàng, đơn hàng
+  và lịch sử thanh toán.
+- Hỗ trợ thanh toán khi nhận hàng (COD) và thanh toán trực tuyến qua VNPay.
+- Cung cấp số liệu tổng quan giúp quản trị viên theo dõi hoạt động kinh doanh.
+
+1.3. Phạm vi
+- Ứng dụng web ASP.NET Core MVC .NET 8, giao diện Razor Views.
+- Dữ liệu lưu trên SQL Server thông qua Entity Framework Core Code First.
+- Xác thực và phân quyền bằng ASP.NET Core Identity.
+- VNPay được tích hợp ở môi trường Sandbox; hệ thống không trực tiếp lưu thông
+  tin thẻ hoặc tài khoản ngân hàng của khách hàng.
+- Tiền tệ sử dụng: VND. Thời gian được lưu theo UTC và hiển thị theo giờ Việt Nam
+  khi cần.
+
+
+2. TÁC NHÂN VÀ PHÂN QUYỀN
+--------------------------
+
+2.1. Khách vãng lai (Guest)
+- Xem trang chủ, danh mục và chi tiết sản phẩm.
+- Tìm kiếm, lọc, sắp xếp và phân trang danh sách sản phẩm.
+- Thêm, sửa số lượng và xóa sản phẩm trong giỏ hàng.
+- Đặt hàng bằng COD hoặc VNPay mà không bắt buộc đăng ký tài khoản.
+- Xem trang xác nhận đơn hàng bằng mã đơn được trả về sau khi checkout.
+- Đăng ký, đăng nhập và yêu cầu đặt lại mật khẩu.
+
+2.2. Khách hàng (Customer)
+- Có toàn bộ quyền của khách vãng lai.
+- Cập nhật họ tên, số điện thoại, địa chỉ và đổi mật khẩu.
+- Sử dụng thông tin đã lưu để điền nhanh biểu mẫu nhận hàng.
+- Xem danh sách và chi tiết các đơn hàng thuộc chính tài khoản của mình.
+- Thanh toán lại đơn VNPay hợp lệ khi lần thanh toán trước thất bại.
+
+2.3. Quản trị viên (Admin)
+- Truy cập khu vực /Admin; người không có role Admin bị từ chối truy cập.
+- Xem dashboard kinh doanh.
+- Quản lý danh mục, sản phẩm, phiên bản sản phẩm và tồn kho.
+- Tìm kiếm, xem chi tiết, khóa/mở khóa khách hàng và xuất danh sách CSV.
+- Tìm kiếm, lọc, xem chi tiết và cập nhật trạng thái đơn hàng.
+- Xem lịch sử các lần thanh toán của từng đơn hàng.
+
+
+3. YÊU CẦU CHỨC NĂNG
+---------------------
+
+3.1. Danh mục và sản phẩm
+
+FR-PRO-01. Hệ thống hiển thị các danh mục đang hoạt động.
+
+FR-PRO-02. Danh sách sản phẩm chỉ hiển thị sản phẩm đang hoạt động và hỗ trợ:
+- Tìm theo tên hoặc nội dung mô tả.
+- Lọc theo danh mục, khoảng giá, màu sắc và dung lượng/cấu hình.
+- Sắp xếp mới nhất, giá tăng dần, giá giảm dần hoặc theo tên.
+- Phân trang; kích thước trang mặc định là 12 sản phẩm.
+
+FR-PRO-03. Chi tiết sản phẩm phải có tên, mô tả, ảnh, danh mục và các phiên bản
+đang hoạt động. Mỗi phiên bản có màu sắc, dung lượng/cấu hình, SKU, giá bán và
+số lượng tồn kho riêng.
+
+FR-PRO-04. Slug của danh mục và slug của sản phẩm phải duy nhất. SKU của phiên
+bản phải duy nhất trong toàn hệ thống.
+
+FR-PRO-05. Quản trị viên có thể tạo, chỉnh sửa, bật hoặc tắt danh mục và sản
+phẩm. Mỗi sản phẩm khi tạo phải có ít nhất một phiên bản.
+
+FR-PRO-06. Giá cơ bản và giá phiên bản phải lớn hơn 0; tồn kho không được âm.
+Sản phẩm hoặc phiên bản bị tắt không được phép thêm mới vào giỏ hàng.
+
+FR-PRO-07. Ảnh đại diện sản phẩm chỉ chấp nhận JPG/JPEG, PNG hoặc WEBP, tối đa
+5 MB. Tên file lưu trên máy chủ phải được sinh ngẫu nhiên, không dùng trực tiếp
+tên file do người dùng gửi lên.
+
+3.2. Tài khoản và xác thực
+
+FR-ACC-01. Người dùng đăng ký bằng họ tên, email, số điện thoại, địa chỉ, mật
+khẩu và xác nhận mật khẩu. Email phải duy nhất và đúng định dạng.
+
+FR-ACC-02. Mật khẩu dài ít nhất 8 ký tự, có chữ hoa, chữ thường và chữ số; không
+bắt buộc ký tự đặc biệt. Mật khẩu phải được Identity băm trước khi lưu.
+
+FR-ACC-03. Tài khoản đăng ký mới được gán role Customer. Hệ thống hỗ trợ role
+Admin và Customer.
+
+FR-ACC-04. Người dùng có thể đăng nhập bằng email/mật khẩu, ghi nhớ đăng nhập,
+đăng xuất, đổi mật khẩu và đặt lại mật khẩu bằng token.
+
+FR-ACC-05. Sau 5 lần đăng nhập sai, Identity tạm khóa đăng nhập theo chính sách
+đã cấu hình. Tài khoản bị quản trị viên vô hiệu hóa không được đăng nhập.
+
+FR-ACC-06. Chức năng quên mật khẩu luôn trả thông báo trung tính, không tiết lộ
+email có tồn tại hay không. Môi trường development có thể hiển thị link đặt lại;
+production phải tích hợp email provider để gửi link.
+
+FR-ACC-07. Khi khách đăng nhập hoặc đăng ký, giỏ hàng khách vãng lai được gộp
+vào giỏ của tài khoản. Nếu cùng một phiên bản đã tồn tại ở hai giỏ, số lượng sau
+khi gộp không được vượt tồn kho hiện tại.
+
+3.3. Giỏ hàng
+
+FR-CART-01. Khách vãng lai được nhận một khóa giỏ dạng guest:<guid> trong cookie
+HttpOnly, SameSite=Lax, thời hạn 30 ngày. Người đã đăng nhập dùng user ID làm khóa
+giỏ hàng.
+
+FR-CART-02. Mỗi giỏ chỉ có một dòng cho một phiên bản sản phẩm. Thêm lại cùng
+phiên bản sẽ cộng số lượng.
+
+FR-CART-03. Số lượng thêm mỗi lần nằm trong khoảng 1 đến 100. Tổng số lượng của
+một phiên bản trong giỏ không được vượt tồn kho.
+
+FR-CART-04. Khách hàng có thể cập nhật số lượng hoặc xóa từng dòng. Cập nhật số
+lượng về 0 hoặc nhỏ hơn được hiểu là xóa dòng hàng.
+
+FR-CART-05. Giá và thành tiền hiển thị trong giỏ lấy từ phiên bản hiện tại. Giỏ
+hàng không giữ chỗ tồn kho; tồn kho phải được kiểm tra lại khi tạo đơn.
+
+3.4. Checkout và tạo đơn hàng
+
+FR-ORD-01. Cả khách vãng lai và người đã đăng nhập đều có thể checkout. Giỏ hàng
+phải có ít nhất một mặt hàng hợp lệ.
+
+FR-ORD-02. Người mua phải cung cấp họ tên, email hợp lệ, số điện thoại và địa chỉ
+giao hàng; ghi chú là tùy chọn và tối đa 1.000 ký tự. Địa chỉ tối đa 500 ký tự.
+
+FR-ORD-03. Người dùng chọn một trong hai phương thức thanh toán: COD hoặc VNPay.
+
+FR-ORD-04. Toàn bộ giá, tạm tính, phí giao hàng và tổng thanh toán phải được tính
+lại ở server. Không chấp nhận số tiền do trình duyệt gửi lên.
+
+FR-ORD-05. Chính sách giao hàng:
+- Tạm tính từ 1.000.000 VND trở lên: miễn phí giao hàng.
+- Tạm tính dưới 1.000.000 VND: phí giao hàng 30.000 VND.
+- Tổng thanh toán = tạm tính + phí giao hàng.
+
+FR-ORD-06. Khi tạo đơn, hệ thống dùng transaction mức Serializable để kiểm tra
+lại trạng thái sản phẩm, trạng thái phiên bản và tồn kho; sau đó trừ/giữ tồn kho,
+tạo đơn, chi tiết đơn, bản ghi thanh toán và xóa các dòng trong giỏ như một giao
+dịch nguyên tử.
+
+FR-ORD-07. Mã đơn phải duy nhất. Chi tiết đơn phải lưu snapshot tên sản phẩm,
+tên phiên bản, SKU và đơn giá tại thời điểm mua để lịch sử không thay đổi khi
+dữ liệu sản phẩm được cập nhật sau này.
+
+FR-ORD-08. Đơn của thành viên liên kết với tài khoản. Đơn khách vãng lai có UserId
+rỗng và lưu độc lập họ tên, email, điện thoại, địa chỉ nhận hàng.
+
+3.5. Trạng thái đơn hàng và tồn kho
+
+FR-STA-01. Trạng thái đơn gồm:
+- Pending (Đang chờ) = 0.
+- Confirmed (Đã xác nhận) = 1.
+- Shipping (Đang giao hàng) = 2.
+- Completed (Đã hoàn thành) = 3.
+- Cancelled (Đã hủy) = 4.
+
+FR-STA-02. Chuyển trạng thái hợp lệ:
+- Pending -> Confirmed hoặc Cancelled.
+- Confirmed -> Shipping hoặc Cancelled.
+- Shipping -> Completed.
+- Completed và Cancelled là trạng thái kết thúc.
+- Cập nhật lại đúng trạng thái hiện tại không làm phát sinh nghiệp vụ mới.
+
+FR-STA-03. Khi hủy đơn còn giữ tồn kho, hệ thống hoàn lại đúng một lần và đánh
+dấu StockReleased để ngăn hoàn kho lặp.
+
+FR-STA-04. Khi đơn chuyển sang Completed, trạng thái thanh toán của đơn và bản
+ghi thanh toán mới nhất được chuyển thành Paid; ngày thanh toán được bổ sung nếu
+chưa có. Quy tắc này phục vụ việc xác nhận thu tiền COD.
+
+3.6. Thanh toán
+
+FR-PAY-01. Trạng thái thanh toán gồm Pending = 0, Paid = 1, Failed = 2,
+Refunded = 3 và Cancelled = 4. Mỗi lần thử thanh toán có một Payment riêng để
+bảo toàn lịch sử giao dịch.
+
+FR-PAY-02. Với COD, hệ thống tạo Payment provider COD, trạng thái Pending và mã
+tham chiếu duy nhất theo đơn. Thanh toán được xác nhận khi đơn hoàn thành.
+
+FR-PAY-03. Với VNPay, hệ thống tạo TxnRef duy nhất, quy đổi Amount thành đơn vị
+VNPay (số tiền VND nhân 100), ký payload bằng HMACSHA512 và chuyển người dùng đến
+cổng VNPay Sandbox.
+
+FR-PAY-04. Callback VNPay chỉ được xử lý khi chữ ký hợp lệ. Hệ thống phải kiểm
+tra TxnRef, số tiền của callback với Payment và Order, ResponseCode và
+TransactionStatus trước khi cập nhật dữ liệu.
+
+FR-PAY-05. Callback thành công đặt PaymentStatus = Paid, lưu mã giao dịch, ngân
+hàng, ngày thanh toán và tự động xác nhận đơn. Callback lặp cho giao dịch đã Paid
+phải idempotent, không trừ tồn kho hoặc ghi nhận doanh thu lần nữa.
+
+FR-PAY-06. Callback thất bại/hủy đặt Payment = Failed, lưu phản hồi và hoàn lại
+tồn kho đúng một lần nếu đơn chưa thanh toán.
+
+FR-PAY-07. Thành viên có thể thanh toán lại khi đơn dùng VNPay, chưa Paid và chưa
+Cancelled/Completed. Nếu tồn kho đã hoàn, hệ thống phải kiểm tra và giữ lại tồn
+kho trong transaction trước khi tạo Payment mới; nếu thiếu hàng thì từ chối.
+
+3.7. Tra cứu đơn hàng
+
+FR-HIS-01. Thành viên chỉ được xem lịch sử và chi tiết đơn có UserId của chính
+mình; danh sách sắp xếp mới nhất trước.
+
+FR-HIS-02. Khách vãng lai xem biên nhận bằng cặp ID và mã đơn phù hợp. Không được
+dùng mã của người khác để đọc đơn thành viên.
+
+3.8. Quản trị khách hàng
+
+FR-CUS-01. Quản trị viên có thể tìm khách hàng theo họ tên, email hoặc số điện
+thoại; lọc đang hoạt động/đã khóa và phân trang 10, 25 hoặc 50 dòng.
+
+FR-CUS-02. Danh sách khách hàng không tính tài khoản có role Admin. Trang tổng
+quan hiển thị tổng khách, khách mới trong tháng, đang hoạt động và đã khóa.
+
+FR-CUS-03. Quản trị viên được xem hồ sơ cùng lịch sử đơn, khóa/mở khóa tài khoản
+và xuất kết quả đang lọc ra CSV UTF-8. Các trường bảo mật của Identity như
+PasswordHash, SecurityStamp không được đưa ra giao diện hoặc file xuất.
+
+3.9. Quản trị đơn hàng và dashboard
+
+FR-ADM-01. Danh sách đơn hỗ trợ tìm theo mã đơn, tên khách hoặc email; lọc theo
+trạng thái đơn và trạng thái thanh toán; sắp xếp mới nhất trước.
+
+FR-ADM-02. Chi tiết đơn hiển thị thông tin nhận hàng, dòng sản phẩm, tổng tiền,
+trạng thái đơn và toàn bộ lịch sử thanh toán theo thời gian mới nhất trước.
+
+FR-ADM-03. Dashboard hiển thị tổng sản phẩm đang bán, tổng khách đang hoạt động,
+tổng đơn, đơn hôm nay, đơn chờ xử lý, số phiên bản sắp hết hàng (tồn <= 5), tổng
+doanh thu các đơn Paid, biểu đồ doanh thu 7 ngày và 5 sản phẩm bán nhiều nhất.
+
+
+4. QUY TẮC DỮ LIỆU VÀ QUAN HỆ
+------------------------------
+
+- Category 1 - N Product. Không xóa cứng danh mục đang được sản phẩm tham chiếu.
+- Product 1 - N ProductVariant và Product 1 - N ProductImage.
+- Cart 1 - N CartItem; mỗi cặp CartId + ProductVariantId là duy nhất.
+- ApplicationUser 1 - N Order; khi xóa user, Order.UserId được đặt NULL để giữ
+  lịch sử giao dịch.
+- Order 1 - N OrderDetail và Order 1 - N Payment.
+- Category.Slug, Product.Slug, ProductVariant.SKU, Order.OrderCode và
+  Payment.TxnRef là duy nhất.
+- Cart.UserId là khóa logic, không có foreign key tới AspNetUsers vì cùng cột này
+  phải chứa được khóa giỏ của khách vãng lai.
+- Tiền dùng decimal(18,2); không dùng kiểu số thực dấu chấm động.
+- Trường thời gian nghiệp vụ dùng datetime2; thời gian khóa Identity dùng
+  datetimeoffset.
+- Xóa cứng Product sẽ xóa cascade Variant/Image, nhưng bị chặn nếu variant đã
+  được CartItem hoặc OrderDetail tham chiếu. Nghiệp vụ quản trị ưu tiên tắt
+  IsActive thay vì xóa dữ liệu đã phát sinh giao dịch.
+
+
+5. YÊU CẦU PHI CHỨC NĂNG VÀ BẢO MẬT
+------------------------------------
+
+NFR-01. Tất cả thao tác POST thay đổi dữ liệu phải kiểm tra Anti-forgery token.
+
+NFR-02. Khu vực Admin phải được bảo vệ bằng xác thực và role Admin. Mọi truy vấn
+đơn phía khách hàng phải kiểm tra quyền sở hữu ở server.
+
+NFR-03. Cookie xác thực là HttpOnly theo cơ chế Identity, thời hạn 14 ngày và
+sliding expiration. Production phải dùng HTTPS/HSTS và cookie Secure.
+
+NFR-04. Secret VNPay, mật khẩu, connection string và dữ liệu nhạy cảm không được
+ghi log hoặc commit vào source. Cấu hình production lấy từ biến môi trường hoặc
+secret store.
+
+NFR-05. So sánh chữ ký callback dùng phương thức constant-time. Callback không
+hợp lệ không được cập nhật database.
+
+NFR-06. Các giao dịch tạo đơn, callback và thanh toán lại phải bảo đảm tính nhất
+quán đơn hàng - thanh toán - tồn kho khi có truy cập đồng thời hoặc retry.
+
+NFR-07. Database migration tự chạy khi ứng dụng khởi động, retry hữu hạn khi SQL
+Server chưa sẵn sàng và seed dữ liệu theo cách idempotent.
+
+NFR-08. Các trường nhập liệu phải được kiểm tra bắt buộc, độ dài, kiểu dữ liệu và
+giới hạn nghiệp vụ ở server; thông báo lỗi hiển thị bằng tiếng Việt.
+
+NFR-09. Giao diện hỗ trợ desktop và thiết bị di động bằng Bootstrap 5; các chức
+năng cốt lõi không phụ thuộc framework SPA.
+
+
+6. DỮ LIỆU KHỞI TẠO VÀ CẤU HÌNH
+--------------------------------
+
+- Role mặc định: Admin, Customer.
+- Tài khoản demo quản trị: admin@applestore.local / Admin@123456. Bắt buộc đổi
+  mật khẩu trước khi triển khai thực tế.
+- Danh mục mẫu: iPhone, Mac, iPad, Apple Watch, AirPods và Phụ kiện.
+- SeedData tạo sản phẩm, phiên bản, khách hàng và đơn mẫu theo cách idempotent.
+- VNPay cần TmnCode, HashSecret, BaseUrl và ReturnUrl hợp lệ. Thiếu cấu hình thì
+  đơn vẫn ở trạng thái chờ và người dùng được thông báo để thử thanh toán lại.
+
+
+7. TIÊU CHÍ NGHIỆM THU CHÍNH
+-----------------------------
+
+AC-01. Khách vãng lai thêm hàng, checkout COD và nhận được mã đơn; tồn kho giảm
+đúng số lượng và giỏ được làm trống.
+
+AC-02. Đơn từ 1.000.000 VND được miễn phí giao hàng; đơn thấp hơn cộng đúng
+30.000 VND; sửa giá ở trình duyệt không làm thay đổi số tiền server ghi nhận.
+
+AC-03. Callback VNPay đúng chữ ký/số tiền cập nhật Paid và Confirmed; callback
+sai chữ ký hoặc sai số tiền không thể được ghi nhận là thành công.
+
+AC-04. Callback thất bại hoàn tồn kho một lần; gửi lại callback không làm tồn kho
+tăng thêm.
+
+AC-05. Chỉ chủ đơn xem được đơn thành viên; tài khoản Customer không truy cập
+được /Admin.
+
+AC-06. Admin chỉ chuyển trạng thái theo luồng cho phép; hủy đơn hoàn tồn kho một
+lần; hoàn thành COD đánh dấu đã thanh toán.
+
+AC-07. Slug, SKU, mã đơn và TxnRef trùng bị database hoặc tầng nghiệp vụ từ chối.
+
+AC-08. Khởi động hệ thống nhiều lần không tạo trùng role, tài khoản hoặc dữ liệu
+seed; database giữ nguyên dữ liệu đã phát sinh.
